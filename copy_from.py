@@ -337,7 +337,8 @@ class CopyMapping:
         sql = """
             INSERT INTO "%(model_table)s" (%(model_fields)s) (
             SELECT %(temp_fields)s
-            FROM "%(temp_table)s")%(insert_suffix)s
+            FROM "%(temp_table)s")
+            RETURNING "%(model_table)s"."id"%(insert_suffix)s
         """
         options = dict(
             model_table=self.model._meta.db_table,
@@ -426,8 +427,10 @@ class CopyMapping:
         # Post-insert hook
         self.post_insert(cursor)
 
+        returned_rows = cursor.fetchall()
+
         # Return the row count
-        return insert_count
+        return [t[0] for t in returned_rows]
 
     def post_insert(self, cursor):
         pass
